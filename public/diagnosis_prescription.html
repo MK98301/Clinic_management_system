@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Diagnosis & Prescription - HealthFirst Clinic</title>
+  <link rel="stylesheet" href="index_style.css" />
+  <style>
+    .info-box, .form-box {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      border-radius: 10px;
+      background: #f9f9f9;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      border: 1px solid #aaa;
+      border-radius: 6px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #0b6e4f;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+        background-color:  #85f4d1; 
+        color: black;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">🩺 HealthFirst Clinic - Add Prescription</div>
+    <nav>
+      <ul>
+        <li><a href="doctor_dashboard.html">Dashboard</a></li>
+        <li><a href="staff_login.html">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container">
+    <div class="info-box" id="patient-info">
+      <h2>Patient Details</h2>
+      <p>Loading patient information...</p>
+    </div>
+
+    <div class="form-box">
+      <h2>Add Prescription</h2>
+      <form id="prescription-form">
+        <label for="diagnosis">Diagnosis</label>
+        <textarea id="diagnosis" name="diagnosis" required></textarea>
+
+        <label for="description">Description</label>
+        <textarea id="description" name="description" required></textarea>
+
+        <label for="prescription">Prescription</label>
+        <textarea id="prescription" name="prescription" required></textarea>
+
+        <label for="dosage">Dosage</label>
+        <input type="text" id="dosage" name="dosage" required />
+
+        <label for="instructions">Instructions</label>
+        <textarea id="instructions" name="instructions" required></textarea>
+
+        <button type="submit">Save Prescription</button>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const patientId = urlParams.get("patient_id");
+      if (!patientId) {
+        document.getElementById("patient-info").innerHTML = "<p>Patient ID not found in URL.</p>";
+        return;
+      }
+
+      try {
+        const res = await fetch(`/doctor/patient-appointment?patient_id=${patientId}`);
+        const data = await res.json();
+
+        if (!res.ok) throw new Error("Failed to fetch patient info.");
+
+        const infoDiv = document.getElementById("patient-info");
+        infoDiv.innerHTML = `
+          <p><strong>Name:</strong> ${data.patient.patient_name}</p>
+          <p><strong>Age:</strong> ${data.patient.age}</p>
+          <p><strong>Gender:</strong> ${data.patient.gender}</p>
+          <p><strong>Phone:</strong> ${data.patient.phone_no}</p>
+          <p><strong>Email ID:</strong> ${data.patient.email}</p>
+          <p><strong>Medical History:</strong> ${data.patient.medical_history}</p>
+          <p><strong>Allergies:</strong> ${data.patient.any_allergies || "None"}</p>
+          <p><strong>Reason for Visit:</strong> ${data.appointment.reason_for_visit}</p>
+          <p><strong>Temperature:</strong> ${data.appointment.temperature}°F</p>
+        `;
+
+        // Store appointment_id for submission
+        document.getElementById("prescription-form").dataset.appointmentId = data.appointment.appointment_id;
+      } catch (err) {
+        console.error(err);
+        document.getElementById("patient-info").innerHTML = "<p>Error loading patient details.</p>";
+      }
+
+      document.getElementById("prescription-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const payload = {
+          appointment_id: form.dataset.appointmentId,
+          diagnosis: form.diagnosis.value,
+          description: form.description.value,
+          prescription: form.prescription.value,
+          dosage: form.dosage.value,
+          instructions: form.instructions.value,
+        };
+
+        try {
+          const res = await fetch("/doctor/save-prescription", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          if (!res.ok) throw new Error("Failed to save prescription.");
+
+          alert("Prescription saved successfully!");
+          window.location.href = "doctor_dashboard.html";
+        } catch (err) {
+          console.error(err);
+          alert("Failed to save prescription.");
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

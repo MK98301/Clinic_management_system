@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Staff Login - HealthFirst Clinic</title>
+  <link rel="stylesheet" href="index_style.css" />
+</head>
+<body>
+
+  <header>
+    <div class="logo">🩺 HealthFirst Clinic - Staff Login</div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="admin_login.html">Admin Login</a></li>
+        </ul>
+    </nav>
+  </header>
+
+  <section class="login-page">
+    <form class="login-form" action="/staff-login" method="POST">
+      <h2>Staff Login</h2>
+
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" required />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required />
+
+      <label for="role">Role</label>
+      <select id="role" name="role" required>
+        <option value="">Select Role</option>
+        <option value="Doctor">Doctor</option>
+        <option value="Receptionist">Receptionist</option>
+        <option value="Staff">Staff</option>
+      </select>
+
+      <button type="submit">Login</button>
+
+      <p class="login-note">Access is restricted to registered staff only.</p>
+    </form>
+  </section>
+
+</body>
+</html>

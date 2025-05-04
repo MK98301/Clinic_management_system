@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book Appointment</title>
+  <link rel="stylesheet" href="receptionist_style.css" />
+  
+</head>
+
+<body>
+
+  <header>
+    <div class="logo">🩺 Book Appointment - HealthFirst Clinic</div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="receptionist_dashboard.html">Dashboard</a></li>
+        <li><a href="staff_login.html">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="registration-container">
+    <h2>Book Appointment</h2>
+    <form id="appointmentForm">
+      <label>Patient ID</label>
+      <input type="text" id="patient_id" name="patient_id" readonly />
+
+      <label>Patient Name</label>
+      <input type="text" id="patient_name" readonly />
+
+      <label>Age</label>
+      <input type="number" id="age" readonly />
+
+      <label>Gender</label>
+      <input type="text" id="gender" readonly />
+
+      <label>Phone Number</label>
+      <input type="text" id="phone_no" readonly />
+
+      <label>Temperature (°C)(Write in Decimal eg. 98.7)</label>
+      <input type="number" id="temperature" step="0.1" required />
+
+      <label>Reason for Visit</label>
+      <textarea id="reason" required></textarea>
+
+      <label>Date of Visit</label>
+      <input type="date" id="date_of_visit" required />
+
+      <label>Doctor's Department</label>
+      <select id="department" required>
+        <option value="">Select Department</option>
+      </select>
+
+      <label>Doctor Name</label>
+      <select id="doctor" required>
+        <option value="">Select Doctor</option>
+      </select>
+
+      <label>Consultation Fee</label>
+      <input type="number" id="fees" readonly />
+
+      <button type="submit">Save Appointment and Generate Bill</button>
+    </form>
+  </div>
+
+  <script>
+
+
+
+
+    async function fetchPatientDetails(phone) {
+      try {
+        const response = await fetch(`/patient?phone=${encodeURIComponent(phone)}`);
+        const result = await response.json();
+        if (result.success && result.patient) {
+          const p = result.patient;
+          document.getElementById('patient_id').value = p.patient_id;
+          document.getElementById('patient_name').value = p.patient_name;
+          document.getElementById('age').value = p.age;
+          document.getElementById('gender').value = p.gender;
+          document.getElementById('phone_no').value = p.phone_no;
+        } else {
+          alert('Patient not found!');
+        }
+      } catch (err) {
+        console.error('Error fetching patient:', err);
+        alert('Error fetching patient details.');
+      }
+    }
+
+    async function loadDepartments() {
+      try {
+        const res = await fetch('/api/departments');
+        const departments = await res.json();
+        const deptSelect = document.getElementById('department');
+        departments.forEach(dept => {
+          const option = document.createElement('option');
+          option.value = dept;
+          option.textContent = dept;
+          deptSelect.appendChild(option);
+        });
+      } catch (err) {
+        console.error('Error loading departments:', err);
+      }
+    }
+
+    document.getElementById('department').addEventListener('change', async function () {
+      const department = this.value;
+      const doctorSelect = document.getElementById('doctor');
+      doctorSelect.innerHTML = '<option value="">Select Doctor</option>';
+      if (department) {
+        try {
+          const res = await fetch(`/api/doctors?department=${encodeURIComponent(department)}`);
+          const doctors = await res.json();
+          doctors.forEach(doc => {
+            const option = document.createElement('option');
+            option.value = doc;
+            option.textContent = doc;
+            doctorSelect.appendChild(option);
+          });
+        } catch (err) {
+          console.error('Error fetching doctors:', err);
+        }
+      }
+    });
+
+    // Fetch fee when a doctor is selected
+    document.getElementById('doctor').addEventListener('change', async function () {
+      const doctor = this.value;
+      if (doctor) {
+        try {
+          const res = await fetch(`/api/doctor-fee?name=${encodeURIComponent(doctor)}`);
+          const result = await res.json();
+          if (res.ok) {
+            document.getElementById('fees').value = result.fee;
+          } else {
+            document.getElementById('fees').value = '';
+            console.warn('Fee not found for doctor');
+          }
+        } catch (err) {
+          console.error('Error fetching fee:', err);
+          document.getElementById('fees').value = '';
+        }
+      } else {
+        document.getElementById('fees').value = '';
+      }
+    });
+
+
+    document.getElementById('appointmentForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const data = {
+        patient_id: document.getElementById('patient_id').value,
+        reason: document.getElementById('reason').value,
+        department: document.getElementById('department').value,
+        doctor: document.getElementById('doctor').value,
+        date: document.getElementById('date_of_visit').value,
+        temperature: document.getElementById('temperature').value
+      };
+
+      try {
+        const response = await fetch('/save-appointment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          alert(`Appointment saved. Token Number: ${result.token_number}`);
+          sessionStorage.setItem('billData', JSON.stringify(result));
+          //window.location.href = 'receptionist_dashboard.html';
+          window.location.href = 'patient_bill.html';
+        }
+      }
+      catch (err) {
+        console.error('Error saving appointment:', err);
+        alert('Error submitting form.');
+      }
+
+    });
+
+    // On page load
+    const urlParams = new URLSearchParams(window.location.search);
+    const phone = urlParams.get('phone_no');
+    if (phone) fetchPatientDetails(phone);
+    loadDepartments();
+
+
+
+
+
+
+
+
+  </script>
+
+</body>
+
+</html>

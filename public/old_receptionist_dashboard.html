@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Receptionist Dashboard - HealthFirst Clinic</title>
+    <link rel="stylesheet" href="receptionist_style.css" />
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">🩺 HealthFirst Clinic - Receptionist Dashboard</div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="patient_registration.html">New Patient</a></li>
+                <li><a href="staff_login.html">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="dashboard-container">
+            <!-- Departments List in the Aside -->
+            <!-- <aside class="department-list">
+                <h3>Departments</h3>
+                <ul id="departmentList">
+                    <li>Loading...</li>
+                </ul>
+            </aside> -->
+
+            <section class="login-page">
+                <form class="login-form" action="/create-appointment" method="POST">
+                    <h2>New Patient Registration</h2>
+
+                    <label for="phone_number">Patient's Phone Number</label>
+                    <input type="text" id="phone_number" name="phone_number" required>
+
+                    <label for="patient_name">Patient Name</label>
+                    <input type="text" id="patient_name" name="patient_name" required readonly>
+
+                    <label for="age">Age</label>
+                    <input type="number" id="age" name="age" min="0" required readonly>
+
+                    <label for="gender">Gender</label>
+                    <input type="text" id="gender" name="gender" readonly>
+
+                    <label for="temperature">Temperature (°F)</label>
+                    <input type="number" step="0.1" min="95" max="113" id="temperature" name="temperature" required>
+
+                    <label for="reason_for_visit">Reason for Visit</label>
+                    <input type="text" id="reason_for_visit" name="reason_for_visit" required>
+
+                    <!-- Change the Department to a select dropdown -->
+                    <label for="department">Department</label>
+                    <select id="department" name="department" required>
+                        <option value="">Select Department</option>
+                    </select>
+
+                    <label for="doctor_name">Doctor Name</label>
+                    <select id="doctor_name" name="doctor_name" required>
+                        <option value="">Select department first</option>
+                    </select>
+
+                    <button type="submit">Save Appointment</button>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <script>
+
+        function searchPatient(e) {
+            e.preventDefault();
+            const phone = document.getElementById("phone_number").value;
+            window.location.href = `receptionist_dashboard.html?phone=${encodeURIComponent(phone)}`;
+        }
+
+        // Fetch departments when the page loads
+        fetch('/api/departments')
+            .then(res => res.json())
+            .then(data => {
+                //to display list of departments on left side
+                // const departmentList = document.getElementById('departmentList');
+                // departmentList.innerHTML = ''; // Clear the 'Loading...' text
+                // data.forEach(dep => {
+                //     const listItem = document.createElement('li');
+                //     listItem.textContent = dep;
+                //     departmentList.appendChild(listItem);
+                // });
+
+                // Populate the department select dropdown
+                const departmentSelect = document.getElementById('department');
+                data.forEach(dep => {
+                    const option = document.createElement('option');
+                    option.value = dep;
+                    option.textContent = dep;
+                    departmentSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching departments:', error);
+            });
+
+        // Fetch doctors when a department is selected
+        document.getElementById('department').addEventListener('change', function () {
+            const dept = this.value;
+            const doctorSelect = document.getElementById('doctor_name');
+            doctorSelect.innerHTML = '<option value="">Loading...</option>';
+
+            if (!dept) {
+                doctorSelect.innerHTML = '<option value="">Select department first</option>';
+                return;
+            }
+
+            fetch(`/api/doctors?department=${encodeURIComponent(dept)}`)
+                .then(res => res.json())
+                .then(data => {
+                    doctorSelect.innerHTML = '<option value="">Select Doctor</option>';
+                    if (data.length === 0) {
+                        doctorSelect.innerHTML = '<option value="">No doctors available</option>';
+                    } else {
+                        data.forEach(doc => {
+                            const option = document.createElement('option');
+                            option.value = doc;
+                            option.textContent = doc;
+                            doctorSelect.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching doctors:', error);
+                    doctorSelect.innerHTML = '<option value="">No doctors available</option>';
+                });
+        });
+    </script>
+
+</body>
+
+</html>

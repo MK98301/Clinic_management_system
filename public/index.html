@@ -1,0 +1,47 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Clinic Management System</title>
+  <link rel="stylesheet" href="index_style.css" />
+</head>
+<body>
+
+  <header>
+    <div class="logo">🩺 HealthFirst Clinic</div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="admin_login.html">Admin</a></li>
+        <li><a href="staff_login.html">Login</a></li>
+        <li><a href="#">Appointments</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="hero-text">
+      <h1>Welcome to HealthFirst Clinic</h1>
+      <p>Your health is our priority. Manage appointments, access medical records, and consult with doctors—all in one place.</p>
+      <button type="submit" id="new_patient" class="cta-button">Patient Registration</button>
+      
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 HealthFirst Clinic | contact@healthfirst.com | 123-456-7890</p>
+  </footer>
+
+  
+
+<script>
+  document.getElementById("new_patient").addEventListener("click", function() {
+    window.location.href = "patient_registration.html";
+  });
+</script>
+
+</body>
+</html>

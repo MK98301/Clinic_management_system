@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doctor Dashboard - HealthFirst Clinic</title>
+  <link rel="stylesheet" href="index_style.css" />
+</head>
+
+<body>
+
+  <header>
+    <div class="logo">🩺 HealthFirst Clinic - Doctor Dashboard</div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+         <li><a href="#">My Patients</a></li>
+         <li><a href="#">Change Password</a></li>
+        <li><a href="staff_login.html">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="dashboard">
+    <h2>Welcome, Doctor!</h2>
+
+    <div class="dashboard-cards">
+      <div class="card">
+        <h3>Today's Appointments</h3>
+        <div id="appointments-list">
+          <p>Loading...</p>
+        </div>
+
+        <!-- <ul id="appointments-list">
+          <li>Loading...</li>
+        </ul> -->
+      </div>
+
+      <!-- <div class="card">
+        <h3>Patient Records</h3>
+        <p>Access medical histories and notes.</p>
+        <a class="cta-button" href="#">View Patients</a>
+      </div> -->
+    </div>
+  </section>
+
+  <!-- <footer>
+    <p>&copy; 2025 HealthFirst Clinic | contact@healthfirst.com | 123-456-7890</p>
+  </footer> -->
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      let doctorName = '';
+
+      try {
+        // Corrected path from /api/auth/me to /auth/me
+        const resUser = await fetch('/api/auth/me');
+        if (!resUser.ok) throw new Error(`HTTP ${resUser.status}`);
+        const data = await resUser.json();
+        doctorName = data.full_name;
+        console.log('Logged in doctor:', doctorName);
+      } catch (e) {
+        console.error('Doctor not logged in or session expired:', e);
+        document.getElementById('appointments-list').innerHTML = '<li>Please log in to view appointments.</li>';
+        return;
+      }
+
+      const today = new Date().toISOString().split('T')[0];
+
+      try {
+        const res = await fetch(`/doctor/today-appointments?doctor=${encodeURIComponent(doctorName)}&date=${today}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const appointments = await res.json();
+        console.log('Appointments loaded:', appointments);
+
+        const list = document.getElementById('appointments-list');
+        list.innerHTML = '';
+
+        if (appointments.length === 0) {
+          list.innerHTML = '<li>No appointments today.</li>';
+        } else {
+          // appointments.forEach(app => {
+          //   const li = document.createElement('li');
+          //   li.textContent = `👤 ${app.patient_name} (${app.age} ${app.gender}) | Reason: ${app.reason_for_visit} | Temp: ${app.temperature}°C`;
+          //   list.appendChild(li);
+          // });
+          const table = document.createElement('table');
+          table.className = 'appointments-table';
+
+          table.innerHTML = `
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Patient Name</th>
+                <th>Age</th>
+                <th>Gender</th>
+                <th>Reason</th>
+                <th>Temperature (°F)</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${appointments.map((app, index) => `
+                <tr>
+                  <td>${index + 1}</td>
+                  <td>${app.patient_name || 'N/A'}</td>
+                  <td>${app.age || '-'}</td>
+                  <td>${app.gender || '-'}</td>
+                  <td>${app.reason_for_visit}</td>
+                  <td>${app.temperature !== null ? app.temperature + '°' : '-'}</td>
+                  <td>
+                    <button class="prescription-btn" onclick="location.href='diagnosis_prescription.html?patient_id=${app.patient_id}'">
+                    Add Prescription
+                    </button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          `;
+
+          list.appendChild(table);
+        }
+      } catch (err) {
+        console.error('Error loading appointments:', err);
+        document.getElementById('appointments-list').innerHTML = '<li>Error loading appointments.</li>';
+      }
+    });
+  </script>
+
+</body>
+
+</html>

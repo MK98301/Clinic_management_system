@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receptionist Dashboard - HealthFirst Clinic</title>
+    <link rel="stylesheet" href="receptionist_style.css">
+</head>
+<body>
+    <header>
+        <div class="logo">🩺 HealthFirst Clinic - Receptionist Dashboard</div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="existing_patient_search.html">Already Registered Patient</a></li>
+                <li><a href="staff_login.html">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="registration-container">
+        <h2>New Patient Registration</h2>
+        <form id="patientForm">
+          <label for="patient_name">Patient Name</label>
+          <input type="text" id="patient_name" name="patient_name" required>
+      
+          <label for="age">Age</label>
+          <input type="number" id="age" name="age" min="0" required>
+      
+          <label for="gender">Gender</label>
+          <select id="gender" name="gender" required>
+            <option value="">Select...</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+      
+          <label for="phone_no">Phone Number</label>
+          <input type="tel" id="phone_no" name="phone_no" pattern="[0-9]{10}" maxlength="10" required>
+      
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email">
+      
+          <label for="medical_history">Medical History</label>
+          <textarea id="medical_history" name="medical_history" rows="3"></textarea>
+      
+          <label for="any_allergies">Any Allergies</label>
+          <textarea id="any_allergies" name="any_allergies" rows="2"></textarea>
+      
+          <button type="submit">Register Patient</button>
+        </form>
+      </div>
+      
+      <script>
+        document.getElementById('patientForm').addEventListener('submit', async function(e) {
+          e.preventDefault();
+        
+          const data = {
+            patient_name: document.getElementById('patient_name').value,
+            gender: document.getElementById('gender').value,
+            phone_no: document.getElementById('phone_no').value,
+            email: document.getElementById('email').value,
+            age: document.getElementById('age').value,
+            medical_history: document.getElementById('medical_history').value,
+            any_allergies: document.getElementById('any_allergies').value
+          };
+        
+          const response = await fetch('/register-patient', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+        
+          const result = await response.json();
+          if (result.success) {
+            alert('Patient registered!');
+            
+            window.location.href = 'existing_patient_search.html';
+          } else {
+            alert('Error: ' + result.message);
+          }
+        });
+
+
+        
+    
+  
+        </script>
+        
+      
+      
+</body>
+</html>

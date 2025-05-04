@@ -1,0 +1,132 @@
+<!-- generate_token.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Generate Token</title>
+  <link rel="stylesheet" href="receptionist_style.css" />
+</head>
+<body>
+  <header><div class="logo">🩺 Generate Token for Patient</div></header>
+
+  <section class="login-page">
+    <form class="login-form" id="tokenForm">
+      <div id="patientDetails"></div>
+
+      <label for="temperature">Temperature (°F)</label>
+      <input type="number" step="0.1" min="95" max="113" id="temperature" name="temperature" required>
+
+      <label for="reason">Reason for Visit</label>
+      <input type="text" id="reason" name="reason" required>
+
+      <!-- Change the Department to a select dropdown -->
+      <label for="department">Department</label>
+      <select id="department" name="department" required>
+          <option value="">Select Department</option>
+      </select>
+
+      <label for="doctor">Doctor Name</label>
+      <select id="doctor" name="doctor" required>
+          <option value="">Select department first</option>
+      </select>
+
+      <button type="submit">Save Appointment</button>
+
+      <!-- <label for="department">Department</label>
+      <select id="department" required></select>
+
+      <label for="doctor">Doctor</label>
+      <select id="doctor" required>
+        <option>Select Department First</option>
+      </select>
+
+      <button type="submit">Generate Token</button> -->
+    </form>
+  </section>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const phone = urlParams.get("phone");
+
+    let patientId = null;
+
+    // Get patient details
+    fetch(`/api/patient?phone=${phone}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!data) {
+          document.getElementById("patientDetails").innerHTML = "<p>No patient found.</p>";
+          return;
+        }
+        patientId = data.id;
+        document.getElementById("patientDetails").innerHTML = `
+        <p><strong>Patient ID:</strong> ${data.id}</p>
+          <p><strong>Name:</strong> ${data.name}</p>
+          <p><strong>Age:</strong> ${data.age}</p>
+          <p><strong>Gender:</strong> ${data.gender}</p>
+          <p><strong>Phone:</strong> ${data.phone}</p>
+        `;
+      });
+
+    // Load departments
+    fetch('/api/departments')
+      .then(res => res.json())
+      .then(departments => {
+        const deptSelect = document.getElementById("department");
+        departments.forEach(dep => {
+          const opt = document.createElement("option");
+          opt.value = dep;
+          opt.textContent = dep;
+          deptSelect.appendChild(opt);
+        });
+      });
+
+    // Load doctors based on department
+    document.getElementById("department").addEventListener("change", function() {
+      const dept = this.value;
+      const doctorSelect = document.getElementById("doctor");
+      doctorSelect.innerHTML = "<option>Loading...</option>";
+
+      fetch(`/api/doctors?department=${dept}`)
+        .then(res => res.json())
+        .then(doctors => {
+          doctorSelect.innerHTML = "";
+          doctors.forEach(doc => {
+            const opt = document.createElement("option");
+            opt.value = doc;
+            opt.textContent = doc;
+            doctorSelect.appendChild(opt);
+          });
+        });
+    });
+
+    // Submit token form
+    document.getElementById("tokenForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const tokenData = {
+        patient_id: patientId,
+        reason: document.getElementById("reason").value,
+        department: document.getElementById("department").value,
+        doctor: document.getElementById("doctor").value,
+        date: new Date().toISOString().split("T")[0] // today’s date
+      };
+
+      fetch('/api/save-appointment', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(tokenData)
+      })
+      .then(res => res.json())
+      .then(result => {
+        alert(`Token Generated: ${result.token_number}`);
+        window.location.href = "receptionist_dashboard.html";
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Failed to generate token.");
+      });
+    });
+  </script>
+</body>
+</html>
