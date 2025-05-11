@@ -1,0 +1,68 @@
+create database clinic_management_system;
+use clinic_management_system;
+CREATE TABLE staff (
+    staff_id INT NOT NULL AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255),
+    full_name VARCHAR(100) NOT NULL,
+    role ENUM('admin', 'doctor', 'receptionist', 'other staff'),
+    phone VARCHAR(15) UNIQUE,
+    email VARCHAR(100) NOT NULL,
+    gender ENUM('male', 'female', 'other'),
+    date_of_joining DATE DEFAULT (CURRENT_DATE),
+    consultation_fee INT,
+    address VARCHAR(500) NOT NULL,
+    doc_department VARCHAR(100),
+    PRIMARY KEY (staff_id),
+    CHECK (phone REGEXP '^[0-9]{10}$')
+);
+
+CREATE TABLE patients (
+    patient_id INT NOT NULL AUTO_INCREMENT,
+    patient_name VARCHAR(100) NOT NULL,
+    gender ENUM('male', 'female', 'other') NOT NULL,
+    phone_no VARCHAR(10) NOT NULL,
+    email VARCHAR(100),
+    age INT NOT NULL,
+    medical_history TEXT,
+    any_allergies TEXT,
+    PRIMARY KEY (patient_id)
+);
+
+CREATE TABLE appointments (
+    appointment_id INT NOT NULL AUTO_INCREMENT,
+    patient_id INT NOT NULL,
+    doc_department VARCHAR(100) NOT NULL,
+    doc_name VARCHAR(100) NOT NULL,
+    temperature DECIMAL(4,1),
+    reason_for_visit VARCHAR(255) NOT NULL,
+    date_of_visit DATE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    diagnosis TEXT,
+    description TEXT,
+    prescription TEXT,
+    dosage TEXT,
+    instructions TEXT,
+    PRIMARY KEY (appointment_id),
+      FOREIGN KEY (patient_id)        REFERENCES  patients(patient_id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE tokens (
+    token_no INT NOT NULL AUTO_INCREMENT,
+    patient_id INT NOT NULL,
+    appointment_id INT NOT NULL,
+    issued_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (token_no),
+    
+        FOREIGN KEY (patient_id)
+        REFERENCES patients(patient_id)
+        ON DELETE CASCADE,
+        FOREIGN KEY (appointment_id)
+        REFERENCES appointments(appointment_id)
+        ON DELETE CASCADE
+);
+
+insert into staff(username, password, full_name, role, phone, email,gender, address) values ("admin","pass123","Admin",'admin',"9000090000","admin@gmail.com",'male', "street no 3");
+
+
