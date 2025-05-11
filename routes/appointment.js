@@ -160,7 +160,7 @@ router.post('/save-appointment', (req, res) => {
     a.patient_id
   FROM appointments a
   JOIN patients p ON a.patient_id = p.patient_id
-  WHERE a.doc_name = ? AND a.date_of_visit = ? AND a.prescription = ""
+  WHERE a.doc_name = ? AND a.date_of_visit = ? AND (a.prescription IS NULL OR a.prescription = "")
   ORDER BY a.created_at ASC
 `;
 
