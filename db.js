@@ -4,7 +4,7 @@ const mysql = require('mysql2');  // ✅ This line was missing
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: 'MK@123',
+  password: 'mk123',
   database: 'clinic_management_system'
 });
 
